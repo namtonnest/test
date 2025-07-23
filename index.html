@@ -295,11 +295,15 @@
 <body>
   <!-- Bottom Navbar -->
   <div class="bottom-navbar">
-    <div class="navbar-links">
-      <a href="#">Map</a>
-      <a href="#">Models</a>
-      <a href="#">Settings</a>
-      <a href="agenda.html" id="agenda-link">Agenda</a>
+    <div class="navbar-links" style="flex-direction:column; align-items:flex-start; gap:0;">
+      <div style="width:100%; margin-bottom:8px;">
+        <a href="agenda.html" id="agenda-link" style="display:block; width:100%; font-weight:bold; background:orange; color:white; padding:8px 0; text-align:center; border-radius:6px; text-decoration:none; font-size:18px;">Agenda</a>
+      </div>
+      <div style="display:flex; gap:30px; width:100%;">
+        <a href="#">Map</a>
+        <a href="#">Models</a>
+        <a href="#">Settings</a>
+      </div>
     </div>
     <div style="font-weight:bold;">Location Locations</div>
   </div>
