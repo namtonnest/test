@@ -7,6 +7,9 @@
   <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet" />
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script
     src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.0/mapbox-gl-directions.js"></script>
   <link rel="stylesheet"
@@ -17,30 +20,39 @@
       position: fixed;
       left: 0;
       top: 0;
-      width: 25%;
+      width: 6.25%;
       height: 55px;
-      background-color: #222;
+      background: linear-gradient(135deg, #2c3e50, #34495e);
       color: white;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 30px;
+      padding: 0 10px;
       z-index: 9999;
       font-size: 18px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      border-bottom: 2px solid #e67e22;
+      backdrop-filter: blur(10px);
     }
     .bottom-navbar .navbar-links {
       display: flex;
       gap: 30px;
     }
     .bottom-navbar .navbar-links a {
-      color: white;
+      color: #ecf0f1;
       text-decoration: none;
       font-size: 16px;
-      transition: color 0.2s;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      padding: 5px 10px;
+      border-radius: 6px;
+      position: relative;
     }
     .bottom-navbar .navbar-links a:hover {
-      color: orange;
+      color: #f39c12;
+      background: rgba(243, 156, 18, 0.1);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
     body {
       margin: 0;
@@ -301,16 +313,30 @@
       position: absolute;
       top: 100%;
       left: 0;
-      background-color: #333;
+      background: linear-gradient(135deg, #34495e, #2c3e50);
       min-width: 200px;
-      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
       z-index: 10000;
-      border-radius: 5px;
-      padding: 10px;
+      border-radius: 10px;
+      padding: 15px;
+      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
     }
 
     .dropdown:hover .dropdown-content {
       display: block;
+      animation: fadeInDown 0.3s ease;
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .dropdown-content .model-button {
@@ -318,21 +344,40 @@
       height: 50px;
       margin: 5px;
       border-radius: 25px;
-      border: 1px solid black;
+      border: 2px solid rgba(255,255,255,0.2);
       color: white;
       text-align: center;
-      line-height: 50px;
+      line-height: 46px;
       cursor: pointer;
       font-weight: bold;
       font-size: 10px;
       display: inline-block;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
 
-    .model-truck { background-color: #ff0000; }
-    .model-craft { background-color: #ff9900; }
-    .model-basecamp { background-color: #0000ff; }
-    .model-set { background-color: #ffa500; border-color: rgb(152, 179, 153); }
-    .model-cone { background-color: #ff6a00; }
+    .dropdown-content .model-button:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+      border-color: rgba(255,255,255,0.4);
+    }
+
+    .model-truck { 
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+    }
+    .model-craft { 
+      background: linear-gradient(135deg, #f39c12, #e67e22);
+    }
+    .model-basecamp { 
+      background: linear-gradient(135deg, #3498db, #2980b9);
+    }
+    .model-set { 
+      background: linear-gradient(135deg, #f39c12, #d68910);
+      border-color: rgb(152, 179, 153);
+    }
+    .model-cone { 
+      background: linear-gradient(135deg, #e67e22, #d35400);
+    }
   </style>
 </head>
 
@@ -344,7 +389,6 @@
         <a href="agenda.html" id="agenda-link" style="display:block; width:100%; font-weight:bold; background:orange; color:white; padding:8px 0; text-align:center; border-radius:6px; text-decoration:none; font-size:18px;">Agenda</a>
       </div>
       <div style="display:flex; gap:30px; width:100%;">
-        <a href="#">Map</a>
         <div class="dropdown">
           <a href="#" style="color:white; text-decoration:none;">Models</a>
           <div class="dropdown-content">
@@ -355,10 +399,8 @@
             <div id="dropdown-cone" class="model-button model-cone" draggable="true">Cone</div>
           </div>
         </div>
-        <a href="#">Settings</a>
       </div>
     </div>
-    <div style="font-weight:bold;">Location Locations</div>
   </div>
   <script src="https://cdn.jsdelivr.net/gh/jscastro76/threebox@v.2.2.2/dist/threebox.min.js"
     type="text/javascript"></script>
@@ -389,6 +431,27 @@
   </div>
   <script>
 
+    // Firebase Configuration - Replace with your Firebase project config
+   const firebaseConfig = {
+  apiKey: "AIzaSyAn9HBx_tCzLC8f9DFK_JylL8WrYVEqYnU",
+  authDomain: "maps-a0597.firebaseapp.com",
+  projectId: "maps-a0597",
+  storageBucket: "maps-a0597.firebasestorage.app",
+  messagingSenderId: "1018682860005",
+  appId: "1:1018682860005:web:3aab21c5a87e15b3818f0c",
+  measurementId: "G-T7D1JX7Y2E"
+
+    };
+    // Initialize Firebase (real-time features enabled)
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const modelsRef = database.ref('models');
+    const usersRef = database.ref('users');
+
+    // Generate unique user ID for this session
+    const userId = 'user_' + Math.random().toString(36).substr(2, 9);
+    const userColor = '#' + Math.floor(Math.random()*16777215).toString(16);
+
     mapboxgl.accessToken = "pk.eyJ1IjoicHVycGhhY3RzIiwiYSI6ImNsdzY1bzVvNzFwb3IyamxyOG1vY3oyM2gifQ.2LikTeWKwlWsAcEneBXW0Q";
     const map = new mapboxgl.Map({
       container: "map",
@@ -401,6 +464,10 @@
 
 
     map.on("load", () => {
+
+      // Initialize real-time features
+      loadModelsFromFirebase();
+      trackUserPresence();
 
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -570,33 +637,131 @@
             modelMarkers.push(markerData);
             model.userData.markerData = markerData; // Attach data to the model itself
 
-            // Listen for the end of a drag event to update position
-            model.on('dragend', function () {
-              const newCoordsArray = model.getCoords(); // Returns [lng, lat]
-              const newCoordsObj = { lng: newCoordsArray[0], lat: newCoordsArray[1] };
-              markerData.coordinates = newCoordsObj; // Update stored coordinates
-              
-              // Update the tooltip with the new coordinates
-              const updatedLabelText = formatLabelText(markerData.name, newCoordsObj, markerData.rotation);
-              model.setTooltip(updatedLabelText);
-            });
+            // Add real-time sync functionality
+            syncModelToFirebase(markerData);
 
-            // Listen for the end of a rotation event to update rotation
-            model.on('rotateend', function () {
-              if (model.rotation) {
-                // Convert rotation from radians (from THREE.js) to degrees for display
-                const rotationInDegrees = {
-                    x: model.rotation.x * 180 / Math.PI,
-                    y: model.rotation.y * 180 / Math.PI,
-                    z: model.rotation.z * 180 / Math.PI
-                };
-                markerData.rotation = rotationInDegrees; // Update stored rotation
+            console.log('Model created:', modelName, 'Initial data:', markerData);
+            console.log('Current modelMarkers array:', modelMarkers);
 
-                // Update the tooltip with the new rotation
-                const updatedLabelText = formatLabelText(markerData.name, markerData.coordinates, rotationInDegrees);
-                model.setTooltip(updatedLabelText);
+            // Since model.on doesn't exist, we'll use a different approach
+            // Store reference to update function for manual triggering
+            model.updateTooltip = function() {
+              if (model && model.getCoords) {
+                const currentCoordsArray = model.getCoords();
+                const currentCoordsObj = { lng: currentCoordsArray[0], lat: currentCoordsArray[1] };
+                
+                let currentRotation = { x: 90, y: 0, z: 0 };
+                
+                // Try multiple ways to get rotation data from Threebox model
+                if (model.object && model.object.rotation) {
+                  // Try getting from the Three.js object
+                  currentRotation = {
+                    x: (model.object.rotation.x * 180 / Math.PI) || 90,
+                    y: (model.object.rotation.y * 180 / Math.PI) || 0,
+                    z: (model.object.rotation.z * 180 / Math.PI) || 0
+                  };
+                  console.log('Got rotation from model.object.rotation:', currentRotation);
+                } else if (model.rotation) {
+                  // Try getting from model.rotation
+                  currentRotation = {
+                    x: (model.rotation.x * 180 / Math.PI) || 90,
+                    y: (model.rotation.y * 180 / Math.PI) || 0,
+                    z: (model.rotation.z * 180 / Math.PI) || 0
+                  };
+                  console.log('Got rotation from model.rotation:', currentRotation);
+                } else if (model.modelObj && model.modelObj.rotation) {
+                  // Try getting from modelObj
+                  currentRotation = {
+                    x: (model.modelObj.rotation.x * 180 / Math.PI) || 90,
+                    y: (model.modelObj.rotation.y * 180 / Math.PI) || 0,
+                    z: (model.modelObj.rotation.z * 180 / Math.PI) || 0
+                  };
+                  console.log('Got rotation from model.modelObj.rotation:', currentRotation);
+                } else {
+                  console.log('No rotation source found, using stored rotation:', markerData.rotation);
+                  currentRotation = markerData.rotation;
+                }
+                
+                // Update stored data
+                markerData.coordinates = currentCoordsObj;
+                markerData.rotation = currentRotation;
+                
+                // Update tooltip
+                const updatedLabelText = formatLabelText(markerData.name, currentCoordsObj, currentRotation);
+                model.removeTooltip();
+                model.addTooltip(updatedLabelText, true);
+                
+                console.log('Manual tooltip update for:', modelName, 'Coords:', currentCoordsObj, 'Rotation:', currentRotation);
               }
-            });
+            };
+
+            // Add a more frequent periodic update to catch changes
+            const updateInterval = setInterval(() => {
+              if (model && model.getCoords) {
+                const currentCoordsArray = model.getCoords();
+                const currentCoordsObj = { lng: currentCoordsArray[0], lat: currentCoordsArray[1] };
+                
+                let currentRotation = markerData.rotation;
+                
+                // Try multiple ways to get rotation data
+                if (model.object && model.object.rotation) {
+                  currentRotation = {
+                    x: (model.object.rotation.x * 180 / Math.PI) || 90,
+                    y: (model.object.rotation.y * 180 / Math.PI) || 0,
+                    z: (model.object.rotation.z * 180 / Math.PI) || 0
+                  };
+                } else if (model.rotation) {
+                  currentRotation = {
+                    x: (model.rotation.x * 180 / Math.PI) || 90,
+                    y: (model.rotation.y * 180 / Math.PI) || 0,
+                    z: (model.rotation.z * 180 / Math.PI) || 0
+                  };
+                } else if (model.modelObj && model.modelObj.rotation) {
+                  currentRotation = {
+                    x: (model.modelObj.rotation.x * 180 / Math.PI) || 90,
+                    y: (model.modelObj.rotation.y * 180 / Math.PI) || 0,
+                    z: (model.modelObj.rotation.z * 180 / Math.PI) || 0
+                  };
+                }
+                
+                // Check for changes (use smaller threshold for rotation to catch more changes)
+                const coordsChanged = Math.abs(currentCoordsObj.lng - markerData.coordinates.lng) > 0.00001 || 
+                                    Math.abs(currentCoordsObj.lat - markerData.coordinates.lat) > 0.00001;
+                const rotationChanged = Math.abs(currentRotation.x - markerData.rotation.x) > 0.5 ||
+                                      Math.abs(currentRotation.y - markerData.rotation.y) > 0.5 ||
+                                      Math.abs(currentRotation.z - markerData.rotation.z) > 0.5;
+                
+                if (coordsChanged || rotationChanged) {
+                  console.log('Periodic update detected change for:', modelName);
+                  console.log('Old coords:', markerData.coordinates, 'New coords:', currentCoordsObj);
+                  console.log('Old rotation:', markerData.rotation, 'New rotation:', currentRotation);
+                  
+                  // Log the raw rotation objects for debugging
+                  if (model.object && model.object.rotation) {
+                    console.log('Raw model.object.rotation:', model.object.rotation);
+                  }
+                  if (model.rotation) {
+                    console.log('Raw model.rotation:', model.rotation);
+                  }
+                  if (model.modelObj && model.modelObj.rotation) {
+                    console.log('Raw model.modelObj.rotation:', model.modelObj.rotation);
+                  }
+                  
+                  markerData.coordinates = currentCoordsObj;
+                  markerData.rotation = currentRotation;
+                  
+                  const updatedLabelText = formatLabelText(markerData.name, currentCoordsObj, currentRotation);
+                  model.removeTooltip();
+                  model.addTooltip(updatedLabelText, true);
+                  
+                  // Sync changes to Firebase
+                  syncModelToFirebase(markerData);
+                }
+              }
+            }, 500); // Check every 500ms for more responsive updates
+            
+            // Store the interval ID so we can clear it if needed
+            model.updateIntervalId = updateInterval;
           });
           wasFakeEvent = false;
         }
@@ -849,6 +1014,335 @@
         agendaModal.style.display = "none";
       }
     };
+
+    // Firebase sync functions
+    function syncModelToFirebase(markerData) {
+      // Uncomment when you have Firebase configured
+      /* 
+      if (typeof firebase !== 'undefined' && firebase.database) {
+        const modelId = markerData.name + '_' + Date.now();
+        modelsRef.child(modelId).set({
+          ...markerData,
+          userId: userId,
+          timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+      }
+      */
+      console.log('Would sync to Firebase:', markerData);
+    }
+
+    function loadModelsFromFirebase() {
+      // Uncomment when you have Firebase configured
+      /*
+      if (typeof firebase !== 'undefined' && firebase.database) {
+        modelsRef.on('child_added', (snapshot) => {
+          const modelData = snapshot.val();
+          if (modelData.userId !== userId) {
+            // This model was created by another user
+            createModelFromData(modelData, true);
+          }
+        });
+
+        modelsRef.on('child_changed', (snapshot) => {
+          const modelData = snapshot.val();
+          if (modelData.userId !== userId) {
+            // This model was updated by another user
+            updateModelFromData(modelData);
+          }
+        });
+      }
+      */
+      console.log('Would load models from Firebase');
+    }
+
+    function createModelFromData(modelData, isFromOtherUser = false) {
+      // Create a model from Firebase data
+      const options = {
+        obj: modelData.modelUrl,
+        type: "glb",
+        scale: modelData.scale,
+        units: "meters",
+        rotation: { x: 90, y: 0, z: 0 },
+      };
+      
+      tb.loadObj(options, (model) => {
+        model.setCoords([modelData.coordinates.lng, modelData.coordinates.lat]);
+        tb.add(model);
+
+        // Add different styling for other users' models
+        if (isFromOtherUser) {
+          // Add a different colored outline or indicator
+          const labelText = `${modelData.name} (by other user)<br>Lng: ${modelData.coordinates.lng.toFixed(5)}, Lat: ${modelData.coordinates.lat.toFixed(5)}<br>Rot: X:${modelData.rotation.x.toFixed(0)}, Y:${modelData.rotation.y.toFixed(0)}, Z:${modelData.rotation.z.toFixed(0)}`;
+          model.addTooltip(labelText, true);
+        }
+
+        model.userData.markerData = modelData;
+        modelMarkers.push(modelData);
+      });
+    }
+
+    function trackUserPresence() {
+      // Uncomment when you have Firebase configured
+      /*
+      if (typeof firebase !== 'undefined' && firebase.database) {
+        const userRef = usersRef.child(userId);
+        
+        // Set user as online
+        userRef.set({
+          id: userId,
+          color: userColor,
+          online: true,
+          lastSeen: firebase.database.ServerValue.TIMESTAMP
+        });
+
+        // Remove user when they disconnect
+        userRef.onDisconnect().remove();
+
+        // Listen for other users
+        usersRef.on('child_added', (snapshot) => {
+          const userData = snapshot.val();
+          if (userData.id !== userId) {
+            console.log('User joined:', userData.id);
+            showUserPresence(userData);
+          }
+        });
+
+        usersRef.on('child_removed', (snapshot) => {
+          const userData = snapshot.val();
+          console.log('User left:', userData.id);
+          hideUserPresence(userData.id);
+        });
+      }
+      */
+      console.log('Would track user presence');
+    }
+
+    function showUserPresence(userData) {
+      // Create a visual indicator for other users
+      const indicator = document.createElement('div');
+      indicator.id = `user-${userData.id}`;
+      indicator.style.cssText = `
+        position: fixed;
+        top: 70px;
+        right: 10px;
+        background: ${userData.color};
+        color: white;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+        z-index: 1000;
+      `;
+      indicator.textContent = `User ${userData.id.substr(-4)} online`;
+      document.body.appendChild(indicator);
+    }
+
+    function hideUserPresence(userId) {
+      const indicator = document.getElementById(`user-${userId}`);
+      if (indicator) {
+        indicator.remove();
+      }
+    }
+
+    // Global debugging functions - use these in the console
+    window.debugModelData = function() {
+      console.log('=== MODEL DATA DEBUG ===');
+      console.log('Total models in modelMarkers array:', modelMarkers.length);
+      modelMarkers.forEach((marker, index) => {
+        console.log(`Model ${index}:`, marker);
+      });
+      return modelMarkers;
+    };
+
+    window.showAllModels = function() {
+      console.log('=== ALL THREEBOX MODELS ===');
+      if (tb && tb.world && tb.world.children) {
+        tb.world.children.forEach((child, index) => {
+          if (child.userData && child.userData.markerData) {
+            console.log(`Threebox Model ${index}:`, {
+              name: child.userData.markerData.name,
+              coordinates: child.getCoords ? child.getCoords() : 'No getCoords method',
+              rotation: child.rotation ? {
+                x: child.rotation.x * 180 / Math.PI,
+                y: child.rotation.y * 180 / Math.PI,
+                z: child.rotation.z * 180 / Math.PI
+              } : 'No rotation',
+              userData: child.userData.markerData
+            });
+          }
+        });
+      }
+      return 'Check console output above';
+    };
+
+    window.forceUpdateTooltips = function() {
+      console.log('=== FORCING TOOLTIP UPDATES ===');
+      if (tb && tb.world && tb.world.children) {
+        tb.world.children.forEach((child, index) => {
+          if (child.userData && child.userData.markerData && child.getCoords) {
+            // Use the updateTooltip function if it exists
+            if (typeof child.updateTooltip === 'function') {
+              child.updateTooltip();
+            } else {
+              // Fallback manual update
+              const coords = child.getCoords();
+              const coordsObj = { lng: coords[0], lat: coords[1] };
+              let rotation = { x: 90, y: 0, z: 0 };
+              if (child.rotation) {
+                rotation = {
+                  x: child.rotation.x * 180 / Math.PI,
+                  y: child.rotation.y * 180 / Math.PI,
+                  z: child.rotation.z * 180 / Math.PI
+                };
+              }
+              
+              const formatLabelText = (name, coordinates, rotationInDegrees) => {
+                const lng = coordinates.lng.toFixed(5);
+                const lat = coordinates.lat.toFixed(5);
+                const rotX = rotationInDegrees.x.toFixed(0);
+                const rotY = rotationInDegrees.y.toFixed(0);
+                const rotZ = rotationInDegrees.z.toFixed(0);
+                return `${name}<br>Lng: ${lng}, Lat: ${lat}<br>Rot: X:${rotX}, Y:${rotY}, Z:${rotZ}`;
+              };
+              
+              const labelText = formatLabelText(child.userData.markerData.name, coordsObj, rotation);
+              child.removeTooltip();
+              child.addTooltip(labelText, true);
+              console.log(`Updated tooltip for ${child.userData.markerData.name}:`, labelText);
+            }
+          }
+        });
+      }
+      return 'Tooltips updated - check console for details';
+    };
+
+    window.manualUpdateModel = function(modelName) {
+      console.log('=== MANUAL UPDATE FOR MODEL:', modelName, '===');
+      if (tb && tb.world && tb.world.children) {
+        const model = tb.world.children.find(child => 
+          child.userData && child.userData.markerData && child.userData.markerData.name === modelName
+        );
+        if (model && typeof model.updateTooltip === 'function') {
+          model.updateTooltip();
+          console.log('Updated model:', modelName);
+          return 'Model updated successfully';
+        } else {
+          console.log('Model not found or updateTooltip function not available');
+          return 'Model not found or function not available';
+        }
+      }
+      return 'Threebox not available';
+    };
+
+    window.inspectModel = function(modelName) {
+      console.log('=== INSPECTING MODEL STRUCTURE:', modelName, '===');
+      if (tb && tb.world && tb.world.children) {
+        const model = tb.world.children.find(child => 
+          child.userData && child.userData.markerData && child.userData.markerData.name === modelName
+        );
+        if (model) {
+          console.log('Full model object:', model);
+          console.log('model.rotation:', model.rotation);
+          console.log('model.object:', model.object);
+          if (model.object) {
+            console.log('model.object.rotation:', model.object.rotation);
+            console.log('model.object.children:', model.object.children);
+            if (model.object.children && model.object.children.length > 0) {
+              console.log('model.object.children[0].rotation:', model.object.children[0].rotation);
+            }
+          }
+          console.log('model.modelObj:', model.modelObj);
+          if (model.modelObj) {
+            console.log('model.modelObj.rotation:', model.modelObj.rotation);
+          }
+          console.log('Object keys:', Object.keys(model));
+          
+          // Check if there's a root object or scene
+          if (model.root) {
+            console.log('model.root:', model.root);
+            console.log('model.root.rotation:', model.root.rotation);
+          }
+          if (model.scene) {
+            console.log('model.scene:', model.scene);
+            console.log('model.scene.rotation:', model.scene.rotation);
+          }
+          return model; // Return the model for further inspection
+        } else {
+          console.log('Model not found:', modelName);
+          console.log('Available models:', tb.world.children.filter(child => 
+            child.userData && child.userData.markerData
+          ).map(child => child.userData.markerData.name));
+          return 'Model not found';
+        }
+      }
+      return 'Threebox not available';
+    };
+
+    // Add a helper function to list all available models
+    window.listModels = function() {
+      console.log('=== AVAILABLE MODELS ===');
+      if (tb && tb.world && tb.world.children) {
+        const models = tb.world.children.filter(child => 
+          child.userData && child.userData.markerData
+        ).map(child => child.userData.markerData.name);
+        console.log('Available models:', models);
+        return models;
+      }
+      return [];
+    };
+
+    // Real-time debugging functions
+    window.testFirebaseConnection = function() {
+      if (typeof firebase !== 'undefined' && firebase.database) {
+        console.log('✅ Firebase is connected');
+        return 'Firebase connected';
+      } else {
+        console.log('❌ Firebase not configured. Please set up Firebase config.');
+        console.log('Instructions:');
+        console.log('1. Go to https://console.firebase.google.com/');
+        console.log('2. Create a new project');
+        console.log('3. Enable Realtime Database');
+        console.log('4. Get your config object');
+        console.log('5. Replace the firebaseConfig in the code');
+        return 'Firebase not configured';
+      }
+    };
+
+    window.simulateOtherUser = function() {
+      console.log('Simulating another user placing a model...');
+      const simulatedData = {
+        modelUrl: "https://raw.githubusercontent.com/namtonnest/3dmodels/main/jeep.glb",
+        scale: { x: 3, y: 3, z: 2.7 },
+        coordinates: { lng: -79.3861, lat: 43.6416 },
+        rotation: { x: 90, y: 45, z: 0 },
+        name: "SimulatedTruck",
+        userId: "simulated_user_123"
+      };
+      createModelFromData(simulatedData, true);
+      return 'Simulated user model created';
+    };
+
+    console.log('=== DEBUG FUNCTIONS AVAILABLE ===');
+    console.log('debugModelData() - Shows the modelMarkers array');
+    console.log('showAllModels() - Shows all Threebox models with current data');
+    console.log('forceUpdateTooltips() - Forces all tooltips to update with current data');
+    console.log('manualUpdateModel("ModelName") - Manually update a specific model tooltip');
+    console.log('inspectModel("ModelName") - Inspect the internal structure of a model to find rotation data');
+    console.log('listModels() - List all available model names');
+    console.log('');
+    console.log('=== REAL-TIME FEATURES ===');
+    console.log('testFirebaseConnection() - Check if Firebase is configured');
+    console.log('simulateOtherUser() - Simulate another user placing a model');
+    console.log('');
+    console.log('USAGE: Place a model first, then use listModels() to see available names, then inspectModel("ModelName")');
+    console.log('For real-time: Set up Firebase config, then multiple users can collaborate!');
+    
+    // Test if functions are properly attached
+    if (typeof window.inspectModel === 'function') {
+      console.log('✅ All debug functions loaded successfully!');
+      console.log('🔥 Real-time features ready (Firebase config needed)');
+    } else {
+      console.log('❌ Debug functions failed to load');
+    }
   </script>
   <div id="generated-url-modal" class="modal">
     <div class="modal-content">
