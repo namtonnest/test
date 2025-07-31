@@ -16,7 +16,7 @@
     .bottom-navbar {
       position: fixed;
       left: 0;
-      bottom: 0;
+      top: 0;
       width: 25%;
       height: 55px;
       background-color: #222;
@@ -27,7 +27,7 @@
       padding: 0 30px;
       z-index: 9999;
       font-size: 18px;
-      box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
     .bottom-navbar .navbar-links {
       display: flex;
@@ -51,10 +51,10 @@
 
     #map {
       position: absolute;
-      top: 0;
+      top: 55px;
       bottom: 0;
       width: 100%;
-      height: 100%;
+      height: calc(100% - 55px);
     }
 
     .draggable {
@@ -289,6 +289,50 @@
       text-decoration: none;
       cursor: pointer;
     }
+
+    /* Dropdown styles */
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background-color: #333;
+      min-width: 200px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 10000;
+      border-radius: 5px;
+      padding: 10px;
+    }
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    .dropdown-content .model-button {
+      width: 50px;
+      height: 50px;
+      margin: 5px;
+      border-radius: 25px;
+      border: 1px solid black;
+      color: white;
+      text-align: center;
+      line-height: 50px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 10px;
+      display: inline-block;
+    }
+
+    .model-truck { background-color: #ff0000; }
+    .model-craft { background-color: #ff9900; }
+    .model-basecamp { background-color: #0000ff; }
+    .model-set { background-color: #ffa500; border-color: rgb(152, 179, 153); }
+    .model-cone { background-color: #ff6a00; }
   </style>
 </head>
 
@@ -301,7 +345,16 @@
       </div>
       <div style="display:flex; gap:30px; width:100%;">
         <a href="#">Map</a>
-        <a href="#">Models</a>
+        <div class="dropdown">
+          <a href="#" style="color:white; text-decoration:none;">Models</a>
+          <div class="dropdown-content">
+            <div id="dropdown-truck" class="model-button model-truck" draggable="true">Truck</div>
+            <div id="dropdown-craft" class="model-button model-craft" draggable="true">Craft</div>
+            <div id="dropdown-basecamp" class="model-button model-basecamp" draggable="true">Basecamp</div>
+            <div id="dropdown-set" class="model-button model-set" draggable="true">SET</div>
+            <div id="dropdown-cone" class="model-button model-cone" draggable="true">Cone</div>
+          </div>
+        </div>
         <a href="#">Settings</a>
       </div>
     </div>
@@ -320,13 +373,6 @@
     <input type="text" id="address" class="address-input" placeholder="Enter address or postal code" />
     <button id="fly-button" class="address-button">Fly to</button>
   </div>
-
-
-  <div id="draggable-truck" class="draggable" draggable="true">Truck</div>
-  <div id="draggable-craft" class="draggable2" draggable="true">Craft</div>
-  <div id="draggable-washroom" class="draggable3" draggable="true">Basecamp</div>
-  <div id="draggable-utility" class="draggable4" draggable="true">SET</div>
-  <div id="draggable-cone" class="draggable5" draggable="true">Cone</div>
   <!-- Map style buttons -->
   <div class="map-style-buttons">
     <button id="satellite-button">S</button>
@@ -415,11 +461,11 @@
       });
     });
 
-    const truckElement = document.getElementById("draggable-truck");
-    const craftElement = document.getElementById("draggable-craft");
-    const washroomElement = document.getElementById("draggable-washroom");
-    const utilityElement = document.getElementById("draggable-utility");
-    const coneElement = document.getElementById("draggable-cone");
+    const truckElement = document.getElementById("dropdown-truck");
+    const craftElement = document.getElementById("dropdown-craft");
+    const washroomElement = document.getElementById("dropdown-basecamp");
+    const utilityElement = document.getElementById("dropdown-set");
+    const coneElement = document.getElementById("dropdown-cone");
 
     const markers = [];
     const modelMarkers = [];
@@ -436,53 +482,45 @@
 
     const draggables = [
       {
-        elementId: "draggable-truck",
-        modelUrl: "https://raw.githubusercontent.com/namtonnest/3dmodels/main/truck.gltf",
+        elementId: "dropdown-truck",
+        modelUrl: "https://raw.githubusercontent.com/namtonnest/3dmodels/main/jeep.glb",
         color: 0xff0000, // Red color for truck
         scale: { x: 3, y: 3, z: 2.7 }
       },
       {
-        elementId: "draggable-craft",
+        elementId: "dropdown-craft",
         modelUrl: "https://raw.githubusercontent.com/namtonnest/3dmodels/main/food_truck.glb",
         type: "gltf",
         scale: { x: 6, y: 6, z: 5.4 }
       },
       {
-        elementId: "draggable-washroom",
-        modelUrl: "https://raw.githubusercontent.com/namtonnest/LocationLocations/main/Basecamp.glb",
+        elementId: "dropdown-basecamp",
+        modelUrl: "https://raw.githubusercontent.com/namtonnest/LocationLocations/main/car.glb",
         scale: { x: 5, y: 5, z: 5 }
       },
       {
-        elementId: "draggable-utility",
+        elementId: "dropdown-set",
         modelUrl: "https://raw.githubusercontent.com/namtonnest/LocationLocations/main/SET.glb",
         color: 0xff6a00, // Orange color for utility trailer
         scale: { x: 15, y: 15, z: 5 }
       },
       {
-        elementId: "draggable-cone",
-        modelUrl: "https://raw.githubusercontent.com/namtonnest/3dmodels/main/Cone.glb", // Placeholder URL, replace with actual model URL
+        elementId: "dropdown-cone",
+        modelUrl: "https://raw.githubusercontent.com/namtonnest/3dmodels/main/traffic_cone.glb", // Placeholder URL, replace with actual model URL
         color: 0xff6a00, // Orange
         scale: { x: 3, y: 3, z: 3 }
       }
     ];
-
-    draggables.forEach(({ elementId, modelUrl, color, scale }) => {
+        draggables.forEach(({ elementId, modelUrl, color, scale }) => {
       const draggable = document.getElementById(elementId);
+      const modelName = draggable.textContent; // Get model name e.g., "Truck"
 
       let wasFakeEvent = false;
 
       draggable.addEventListener("click", function (event) {
         event.preventDefault();
-        const canvas = document.querySelector(".mapboxgl-canvas");
-
         wasFakeEvent = true;
-        // const fakeevent = new MouseEvent("click", {
-        //   clientX: event.clientX,
-        //   clientY: event.clientY,
-        //   bubbles: true,
-        // });
-
-        canvas.dispatchEvent(fakeevent);
+        // This part seems incomplete in the original, but the logic below will work.
       });
 
       map.on("click", (event) => {
@@ -494,41 +532,69 @@
             type: "glb",
             scale: scale,
             units: "meters",
-            rotation: { x: 90, y: 0, z: 0 }, // Prevent spinning
+            rotation: { x: 90, y: 0, z: 0 }, // Initial model rotation on load
           };
-          const x = event.point.x;
-          const y = event.point.y;
-          const coords = map.unproject([x, y]);
+          
+          const coords = map.unproject(event.point); // Get {lng, lat} at click position
+          
           tb.loadObj(options, (model) => {
             model.setCoords([coords.lng, coords.lat]);
             tb.add(model);
 
-            // Save model information
+            // Helper function to create the formatted label text
+            const formatLabelText = (name, coordinates, rotationInDegrees) => {
+                const lng = coordinates.lng.toFixed(5);
+                const lat = coordinates.lat.toFixed(5);
+                const rotX = rotationInDegrees.x.toFixed(0);
+                const rotY = rotationInDegrees.y.toFixed(0);
+                const rotZ = rotationInDegrees.z.toFixed(0);
+                // Use <br> for line breaks inside the HTML tooltip
+                return `${name}<br>Lng: ${lng}, Lat: ${lat}<br>Rot: X:${rotX}, Y:${rotY}, Z:${rotZ}`;
+            };
+            
+            // Define the initial rotation in degrees for the label
+            const initialRotation = { x: 90, y: 0, z: 0 };
+
+            // Add the initial tooltip with all data
+            const labelText = formatLabelText(modelName, coords, initialRotation);
+            model.addTooltip(labelText, true); // 'true' makes it a permanent label
+
+            // Save all model data for later use (e.g., in exports or updates)
             const markerData = {
               modelUrl: modelUrl,
-              color: color,
               scale: scale,
-              coordinates: [coords.lng, coords.lat],
-              rotation: { x: 90, y: 0, z: 0 }
+              coordinates: { lng: coords.lng, lat: coords.lat }, // Store as an object
+              rotation: initialRotation, // Store initial rotation
+              name: modelName
             };
             modelMarkers.push(markerData);
-            // Attach reference for later updates
-            model.userData.markerData = markerData;
+            model.userData.markerData = markerData; // Attach data to the model itself
 
-            // Listen for drag/move
+            // Listen for the end of a drag event to update position
             model.on('dragend', function () {
-              const newCoords = model.getCoords();
-              markerData.coordinates = newCoords;
+              const newCoordsArray = model.getCoords(); // Returns [lng, lat]
+              const newCoordsObj = { lng: newCoordsArray[0], lat: newCoordsArray[1] };
+              markerData.coordinates = newCoordsObj; // Update stored coordinates
+              
+              // Update the tooltip with the new coordinates
+              const updatedLabelText = formatLabelText(markerData.name, newCoordsObj, markerData.rotation);
+              model.setTooltip(updatedLabelText);
             });
-            // Listen for rotation
+
+            // Listen for the end of a rotation event to update rotation
             model.on('rotateend', function () {
-              // If Threebox exposes rotation, update markerData.rotation
               if (model.rotation) {
-                markerData.rotation = {
-                  x: model.rotation.x,
-                  y: model.rotation.y,
-                  z: model.rotation.z
+                // Convert rotation from radians (from THREE.js) to degrees for display
+                const rotationInDegrees = {
+                    x: model.rotation.x * 180 / Math.PI,
+                    y: model.rotation.y * 180 / Math.PI,
+                    z: model.rotation.z * 180 / Math.PI
                 };
+                markerData.rotation = rotationInDegrees; // Update stored rotation
+
+                // Update the tooltip with the new rotation
+                const updatedLabelText = formatLabelText(markerData.name, markerData.coordinates, rotationInDegrees);
+                model.setTooltip(updatedLabelText);
               }
             });
           });
@@ -536,6 +602,7 @@
         }
       });
     });
+   
     markerElements.forEach(({ element, color }) => {
       element.addEventListener("dragstart", (e) => {
         e.dataTransfer.setData("text/plain", color);
